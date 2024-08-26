@@ -2,6 +2,7 @@ package com.RunAlliance_back.RunAlliance_back.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,8 +28,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Permettre l'accès public aux endpoints sous /auth/
-                        .anyRequest().authenticated() // Tous les autres endpoints nécessitent une authentification
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/runs/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/runs/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/runs/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/runs/**").hasRole("ADMIN")
+                        .requestMatchers("/api/registrations/**").hasRole("USER")
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .userDetailsService(customUserDetailsService)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
